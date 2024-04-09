@@ -17,25 +17,10 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.datasets import make_classification
 from sklearn.metrics import classification_report
 from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 import random
 import statistics
-
-
-# def loadData(path):
-#     f = open(path, "r")
-#     data = csv.reader(f)  # csv format
-#     data = np.array(list(data))  # convert to matrix
-#     data = np.delete(data, 0, 0)  # delete header
-#     data = np.delete(data, 0, 1)  # delete index
-#     np.random.shuffle(data)  # shuffle data
-#     f.close()
-#     trainSet = data[:, :-1]  # training data from 1 -> 100
-#     testSet = data[:, -1]  # the others is testing data
-#     return trainSet, testSet
-
-
-# X, y = loadData("data_modified.csv")
 
 ID_dataset = 44
 
@@ -57,20 +42,15 @@ temp_p = []
 temp_r = []
 temp_f1 = []
 for time in range(1, 11):
+    combined = list(zip(X.values, y))
+    random.shuffle(combined)
+    dulieu_X_shuffled, dulieu_Y_shuffled = zip(*combined)
     X_Train, X_Test, Y_Train, Y_Test = train_test_split(
-        X, y, test_size=1/3, random_state=None)
-    # print("lenX = {0}, lenY = {1}".format(len(X_Train), len(X_Test)))
-    # rf_model = RandomForestClassifier()
-
-    # class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(Y_Train), y=Y_Train)
-    # # Tạo từ điển trọng số cho mỗi lớp
-    # class_weight = dict(zip(np.unique(Y_Train), class_weights))
-    # print("cw", class_weight)
+        dulieu_X_shuffled, dulieu_Y_shuffled, test_size=1/3, random_state=42, shuffle=True)
 
     rf_model = RandomForestClassifier()
 
     rf_model.fit(X_Train, Y_Train)
-    # print("x-trin,y-trin", X_Train, Y_Train)
 
     Y_Pred = rf_model.predict(X_Test)
 
@@ -91,3 +71,8 @@ mean_r = statistics.mean(temp_r)
 mean_f1 = statistics.mean(temp_f1)
 print("Trung binh 10 lan: acc= {} , p= {}, r= {}, f1= {}".format(
     round(mean_acc, 2), round(mean_p, 2), round(mean_r, 2), round(mean_f1, 2)))
+
+labels = ['1', '2']
+cm = confusion_matrix(Y_Test, Y_Pred, labels=labels)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+disp.plot()
